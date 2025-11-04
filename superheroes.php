@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+header('Content-Type: application/json; charset=utf-8');
+
 
 $superheroes = [
   [
@@ -63,10 +66,22 @@ $superheroes = [
   ], 
 ];
 
-?>
 
-<ul>
-<?php foreach ($superheroes as $superhero): ?>
-  <li><?= $superhero['alias']; ?></li>
-<?php endforeach; ?>
-</ul>
+
+$q = isset($_GET['query']) ? trim((string)$_GET['query']) : '';
+
+if ($q === '') {
+    echo json_encode($superheroes, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$ql = mb_strtolower($q, 'UTF-8');
+
+$results = array_values(array_filter($superheroes, static function (array $h) use ($ql): bool {
+    return mb_strtolower($h['alias'], 'UTF-8') === $ql
+        || mb_strtolower($h['name'], 'UTF-8') === $ql;
+}));
+
+echo json_encode($results, JSON_UNESCAPED_UNICODE);
+exit;
+
